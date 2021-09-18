@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block page_title %}
+All Subjects
+{% endblock %}
+
+
+
+{% block content %}
+{% include 'my_lib/partials/header_nav.html' %}
+
+<p>
+    All Subjects
+</p>
+
+<ul>
+    {% for subject in subjects %}
+        <li><a href="{% url 'subject' subject %}">{{subject|title }}</a></li>
+    {% endfor %}
+</ul>
+
+
+<p>
+    This is from the template within my_lib -> templats -> my_lib -> index.html
+</p>
+
+{% endblock %}
+
+

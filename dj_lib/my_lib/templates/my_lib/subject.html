@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+    Subject {{ subject }}
+{% endblock %}
+
+
+
+
+{% block content %}
+{% include 'my_lib/partials/header_nav.html' %}
+
+<p>
+Subject: {{ subject }}
+</p>
+
+{% if description is not None %}
+<p>
+    Description: {{ description }}
+</p>
+{% else %}
+<p>
+    There is no description
+</p>
+{% endif %}
+<p>
+  Subject Template File
+</p>
+{% endblock %}
