@@ -169,4 +169,4 @@ A library project for practicing Django
     * Base.html
       * {% load static %}
       * ....
-      * <link rel="stylesheet" href="{% static 'base.css' %}" >
+      * \<link rel="stylesheet" href="{% static 'base.css' %}" >
