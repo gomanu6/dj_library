@@ -140,3 +140,33 @@ A library project for practicing Django
 * raise an error
   * raise Http404()
   * during development, 404 page is not displayed
+
+#### Static files (css/js/etc)
+* similar structure as the templates folder
+* app_folder/static/app_name/static_file
+* settings.py
+  * INSTALLED_APPS = [
+    ...
+    'django.contrib.staticfiles',
+]
+  * STATIC_URL = '/static/' ==> tells django under which url to serve static assets, and hence not related to loading static files in the template
+  * Django automatically detects static folder in app folders
+  * Tag: {% load static %}
+  * Base Template
+    * {% block css_files %}
+    * 
+    * {% endblock %}
+  * Page Template
+    * {% load static %}
+    * {% block css_files %}
+    * <link rel="stylesheet" href="{% static 'my_lib/subject.css' %}" >
+    * {% endblock %}
+  * Static Files in the common folders
+    * Add in settings.py
+      * STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
+    * Base.html
+      * {% load static %}
+      * ....
+      * <link rel="stylesheet" href="{% static 'base.css' %}" >

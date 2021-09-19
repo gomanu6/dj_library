@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block page_title %}
 All Subjects
 {% endblock %}
 
-
+{% block css_files %}
+<link rel="stylesheet" href="{% static 'my_lib/index.css' %}" >
+{% endblock %}
 
 {% block content %}
 {% include 'my_lib/partials/header_nav.html' %}
