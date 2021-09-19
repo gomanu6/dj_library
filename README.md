@@ -25,7 +25,9 @@ A library project for practicing Django
 * install Python extention
 * Install Pylance
 * Choose autoformater, install autopep8
-* install Django extension, by Baptiste Darthenay 
+* install Django extension, by Baptiste Darthenay
+* Syntax highlighting for django html in vs code, settings.json
+  * "emmet.includelanguages": { "django-html": "html" }
 
 #### Create the Project structure /  urls / Routes
 * Create a urls.py within the app folder
@@ -56,8 +58,9 @@ A library project for practicing Django
 
 #### url resolvers / Build dynamic urls
 * reverse() - to use in views to refer or redirect
+  * from django.urls import reverse
   * reverse(viewname, urlconf=None, args=None, kwargs=None, current_app=None)
-* url()
+* Tag: url() - use in templates for links
   * url(regex, view, kwargs=None, name=None)
 
 
@@ -170,3 +173,9 @@ A library project for practicing Django
       * {% load static %}
       * ....
       * \<link rel="stylesheet" href="{% static 'base.css' %}" >
+
+### Models
+* https://docs.djangoproject.com/en/3.2/ref/models/fields/
+* Shell
+* validators
+* 
