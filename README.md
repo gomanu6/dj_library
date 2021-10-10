@@ -65,7 +65,7 @@ Starting Python 3.6 dictionaries are ordered.
 - uuid : Matches a formatted UUID. To prevent multiple URLs from mapping to the same page, dashes must be included and letters must be lowercase. For example, 075194d3-6885-417e-a8a8-6c931e272f00. Returns a UUID instance.
 - path : Matches any non-empty string, including the path separator, '/'. This allows you to match against a complete URL path rather than a segment of a URL path as with str.
 
-- The string may contain angle brackets (like <username> above) to capture part of the URL and send it as a keyword argument to the view
+- The string may contain angle brackets (like `<username>` this) to capture part of the URL and send it as a keyword argument to the view
 
 ### [django.urls functions for use in URLconfs](https://docs.djangoproject.com/en/3.2/ref/urls/)
 - [path():](https://docs.djangoproject.com/en/3.2/ref/urls/#path) Returns an element for inclusion in urlpatterns. 
@@ -120,6 +120,8 @@ Starting Python 3.6 dictionaries are ordered.
     * request is required
     * template_name = 'my_lib/subject.html'
     * context = dict, used to pass values to the template
+* [Class based views](https://docs.djangoproject.com/en/3.2/topics/class-based-views/)
+  * 
 
 
 
@@ -331,11 +333,37 @@ Starting Python 3.6 dictionaries are ordered.
         * ....
         * `<link rel="stylesheet" href="{% static 'base.css' %}" >`
 
-### Models
+### [Models](https://docs.djangoproject.com/en/3.2/ref/models/)
 * https://docs.djangoproject.com/en/3.2/ref/models/fields/
 * Shell
 * validators
 
 
-
-
+### Deployment
+- Check settings
+- Collect Static Files
+- migrate database
+- freeze requirements
+  - create virtual env
+  - install required packages
+  - python -m pip freeze > requirements.txt
+- Environment variables
+  - ALLOWED_HOSTS = [ domain_where_it_is_hosted]
+  - `from os import getenv`
+  - ALLOWED_HOSTS = [ getevn("APP_HOST)]
+  - SECRET_KEY = getenv("SECRET_KEY")
+  - DEBUG = getenv("IS_DEVELOPMENT", True)
+- Elastic Beanstalk
+  - create folder .ebextensions
+  - django.config
+    - `option_settings:`
+      - `aws:elasticbeanstalk:container:python:`
+        - `WSGIPATH: my_site.wsgi:application`
+  - configure SSL and custom domain
+  - migrate to postgres
+  - let nginx serve static files
+    - static-files.config
+    - `option_settings:`
+      - `aws:elasticbeanstalk:environment:proxy:staticfiles:`
+        - `/static: staticfiles`
+        - `/files: uploads`
