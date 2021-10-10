@@ -43,6 +43,8 @@ Starting Python 3.6 dictionaries are ordered.
 * Syntax highlighting for django html in vs code, settings.json
   * "emmet.includelanguages": { "django-html": "html" }
 
+[Settings](https://docs.djangoproject.com/en/3.2/ref/settings/)
+
 #### Create the Project structure /  urls / Routes
 * Create a urls.py within the app (my_lib) folder
 * `from django.urls import path`
@@ -85,12 +87,12 @@ Starting Python 3.6 dictionaries are ordered.
 - [HttpResponse](https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpResponse)
 - The HttpResponse class lives in the django.http module.
 - To set or remove a header field in your response, use HttpResponse.headers
-  - HttpResponse sub classes
+  - HttpResponse sub classes (from django.http import ..)
     - HttpResponseRedirect
     - HttpResponsePermanentRedirect
     - HttpResponseNotModified
     - HttpResponseBadRequest
-    - HttpResponseNotFound
+    - HttpResponseNotFound : you are responsible for producing the html content that should go in there.
     - HttpResponseForbidden
     - HttpResponseNotAllowed
     - HttpResponseGone
@@ -107,17 +109,17 @@ Starting Python 3.6 dictionaries are ordered.
 * *View is a function or logic that should execute when a supported url is reached*
 * Each view is responsible for returning an HttpResponse object.
 * Each view you write is responsible for instantiating, populating, and returning an HttpResponse.
-* use HttpResponse and Http ResponseNotFound to return data
+* use HttpResponse and HttpResponseNotFound to return data
 * use HttpResponseRedirect to redirect to the correct url
-* render_to_string()
-  * render_to_string(template_name, context=None, request=None, using=None)
-  * https://docs.djangoproject.com/en/3.2/topics/templates/#django.template.loader.render_to_string
-  * from django.template.loader import render_to_string
-* render() - default way to use templates
-  * from django.shortcuts import render
+* [render_to_string() :](https://docs.djangoproject.com/en/3.2/topics/templates/#django.template.loader.render_to_string) render the template to string and return with HttpResponse.
+  * `render_to_string(template_name, context=None, request=None, using=None)`
+  * `from django.template.loader import render_to_string`
+* render() - default way to use templates, shortcut for render_to_string(), always sends the success response
+  * `from django.shortcuts import render`
   * render(request, template_name, context=None, content_type=None, status=None, using=None)
-  * template_name = 'my_lib/subject.html'
-  * context = dict, used to pass values to the template
+    * request is required
+    * template_name = 'my_lib/subject.html'
+    * context = dict, used to pass values to the template
 
 
 
@@ -134,9 +136,88 @@ Starting Python 3.6 dictionaries are ordered.
 
 
 
+### Templating
+- [Django Templating Language](https://docs.djangoproject.com/en/3.2/topics/templates/#the-django-template-language)
+- [Django template Language](https://docs.djangoproject.com/en/3.2/ref/templates/language/#the-django-template-language)
+- [The Django template language: for Python programmers](https://docs.djangoproject.com/en/3.2/ref/templates/api/#the-django-template-language-for-python-programmers)
+  - A Django template is a text document or a Python string marked-up using the Django template language. Some constructs are recognized and interpreted by the template engine. The main ones are variables and tags.
+  - A template is rendered with a context. Rendering replaces variables with their values, which are looked up in the context, and executes tags. Everything else is output as is.
+  - The syntax of the Django template language involves four constructs.
+    - **Variables**
+      - Variables are surrounded by {{ and }}.
+      - `My first name is {{ first_name }}. My last name is {{ last_name }}.`
+      - Context is a dict-like object mapping keys to values.
+      - `{'first_name': 'John', 'last_name': 'Doe'}`
+      - If a variable resolves to a callable, the template system will call it with no arguments and use its result instead of the callable.
+    - **Tags**
+      - Tags are surrounded by {% and %}.
+      - [Common Built-in Tags reference](https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#built-in-tag-reference)
+        - block : `{% block %} {% endblock %}`
+        - add : 
+        - comment : `{% comment %} and {% endcomment %}`
+        - {% csrf_token %}
+        - extends : Signals that this template extends a parent template.
+          - This tag can be used in two ways:
+            - {% extends "base.html" %} (with quotes) uses the literal value "base.html" as the name of the parent template to extend.
+            - {% extends variable %} uses the value of variable. If the variable evaluates to a string, Django will use that string as the name of the parent template. If the variable evaluates to a Template object, Django will use that object as the parent template.
+        - for : {% for ... %} {% endfor %}
+        - if : {% if ... %} {% endif %}
+        - include : Loads a template and renders it with the current context. This is a way of “including” other templates within a template.
+          - `{% include "foo/bar.html" %}`
+        - load : Loads a custom template tag set.
+          - `{% load somelibrary package.otherlibrary %}`
+        - lorem : `{% lorem [count] [method] [random] %}`
+        - now : Displays the current date and/or time, using a format according to the given string.
+        - url : Returns an absolute path reference (a URL without the domain name) matching a given view and optional parameters.
+          - `{% url 'some-url-name' v1 v2 %}`
+          - `{% url 'some-url-name' arg1=v1 arg2=v2 %}`
+    - **Filters**
+      - {{ django|title }} for  context `{'django': 'the web framework for perfectionists with deadlines'}`
+      - Some filters take an argument: `{{ my_date|date:"Y-m-d" }}`
+      - [Built-In Filters:](https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#built-in-filter-reference)
+        - Common filters
+          - title
+          - capfirst
+          - date
+          - dictsort - 
+          - first - returns the first item in a list.
+          - last
+          - join - Joins a list with a string, like Python’s str.join(list)
+          - length - works with strings and lists
+          - lower
+          - upper
+          - random
+          - slice
+          - slugify
+          - time
+    - [Other Tags and Filters libraries](https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#other-tags-and-filters-libraries)
+      - static : To link to static files that are saved in [STATIC_ROOT](https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-STATIC_ROOT)
+        - `{% load static %} <img src="{% static 'images/hi.jpg' %}" alt="Hi!">`
+      - STATIC_ROOT : The absolute path to the directory where collectstatic will collect static files for deployment.
+      - STATIC_URL : URL to use when referring to static files located in STATIC_ROOT.
+      - STATICFILES_DIRS : This setting defines the additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled, e.g. if you use the collectstatic or findstatic management command or use the static file serving view.
+        - `STATICFILES_DIRS = [
+    "/home/special.polls.com/polls/static",
+    "/home/polls.com/polls/static",
+    "/opt/webfiles/common",
+]`
+      - STATICFILES_STORAGE : The file storage engine to use when collecting static files with the collectstatic management command.
+      - STATICFILES_FINDERS : The list of finder backends that know how to find static files in various locations.
+    - **Comments**
+      - `{# this won't be rendered #}`
+      - A {% comment %} tag provides multi-line comments.
+    - [Custom Template Tags and Filters](https://docs.djangoproject.com/en/3.2/howto/custom-template-tags)
+
+### [Static Files App](https://docs.djangoproject.com/en/3.2/ref/contrib/staticfiles/#module-django.contrib.staticfiles)
+- django.contrib.staticfiles collects static files from each of your applications (and any other places you specify) into a single location that can easily be served in production.
+- [Managing static files (e.g. images, JavaScript, CSS)](https://docs.djangoproject.com/en/3.2/howto/static-files/)
+- [Deploying Static Files](https://docs.djangoproject.com/en/3.2/howto/static-files/deployment/)
+
 
 #### Create templates
 * link the template directory for the app into the project settings file
+* Django by default looks for templates folders inside the app folders.
+* Register the app in the setings.py folder so that the template folder is used by Django. 
   * INSTALLED_APPS = [
     'my_lib',
     'django.contrib.admin',
@@ -152,13 +233,14 @@ Starting Python 3.6 dictionaries are ordered.
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [ BASE_DIR / "app_name" / "templates"],
   * and link the rest of the url in the view where it is required
-    * 
+  * 
 * Template hierarchy
-  * app_name/templates/app_name/template_name.html
+  * project_folder/main_project/app_name/templates/app_name/template_name.html
   * my_lib/templates/my_lib/index.html
 
 
 #### Interpolation
+- can be used throughout the Html document.
 
 ##### Tags
 * https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#built-in-tag-reference
@@ -185,6 +267,8 @@ Starting Python 3.6 dictionaries are ordered.
 #### Template inheritance
 * Base template in common templates folder under the main project folder
 * dj_lib/templates/base.html
+* TEMPLATES = {
+* ......
 * 'DIRS': [ BASE_DIR / "templates" ],
 * Tag: block
   * Create Block in the base template
@@ -196,26 +280,29 @@ Starting Python 3.6 dictionaries are ordered.
     * {% block title %}My amazing blog{% endblock %}
 
 #### Includes / Partials
-* Tag: include
-  * https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#include
+* Tag: [include](https://docs.djangoproject.com/en/3.2/ref/templates/builtins/#include)
   * Loads a template and renders it with the current context. This is a way of “including” other templates within a template.
   * The template name can either be a variable or a hard-coded (quoted) string, in either single or double quotes.
   * {% include "foo/bar.html" %}
   * {% include "name_snippet.html" with person="Jane" greeting="Hello" %}
-  * path to the partial file can be relative or absolute from the template file
+  * path to the partial file can be absolute or relative from the template file
   * included partials have access to the variables / contexts from the views
+  * Can pass additional variables or data into partials with the `with` option
+  * `{% include "name_snippet.html" with person="Jane" greeting="Hello" %}
+`
 
 
 #### 404 Page
 * import Http404 from django.http
-* django looks for a 404.html file in the common templates folder by default (my_lib/templates) 
+* django looks for a 404.html file in the common templates folder by default (dj_library/dj_lib/templates) 
 * raise an error
-  * raise Http404()
+  * `raise Http404()`
+  * can pass an error message to that
   * during development, 404 page is not displayed
 
 #### Static files (css/js/etc)
 * similar structure as the templates folder
-* app_folder/static/app_name/static_file
+* project_folder/project_name/app_folder/static/app_name/static_file
 * settings.py
   * INSTALLED_APPS = [
     ...
@@ -223,25 +310,26 @@ Starting Python 3.6 dictionaries are ordered.
 ]
   * STATIC_URL = '/static/' ==> tells django under which url to serve static assets, and hence not related to loading static files in the template
   * Django automatically detects static folder in app folders
-  * Tag: {% load static %}
+  * Tag: {% load static %} ==> in the template to add the link url for the file
   * Base Template
     * {% block css_files %}
     * 
     * {% endblock %}
   * Page Template
-    * {% load static %}
-    * {% block css_files %}
-    * <link rel="stylesheet" href="{% static 'my_lib/subject.css' %}" >
-    * {% endblock %}
+    * `{% load static %}`
+    * `{% block css_files %}`
+    * `<link rel="stylesheet" href="{% static 'my_lib/subject.css' %}">`
+    * `{% endblock %}`
   * Static Files in the common folders
-    * Add in settings.py
-      * STATICFILES_DIRS = [
-    BASE_DIR / "static"
+    * Django does not look in the main folder for a static folder
+      * Add in settings.py
+        * STATICFILES_DIRS = [
+      BASE_DIR / "static"
 ]
-    * Base.html
-      * {% load static %}
-      * ....
-      * \<link rel="stylesheet" href="{% static 'base.css' %}" >
+      * Base.html
+        * `{% load static %}`
+        * ....
+        * `<link rel="stylesheet" href="{% static 'base.css' %}" >`
 
 ### Models
 * https://docs.djangoproject.com/en/3.2/ref/models/fields/
