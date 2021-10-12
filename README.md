@@ -467,6 +467,15 @@ Starting Python 3.6 dictionaries are ordered.
       * startswith, istartswith
       * endswith, iendswith
       * regex, iregex
+    * [Complex lookups with Q objects](https://docs.djangoproject.com/en/3.2/topics/db/queries/#complex-lookups-with-q-objects)
+      * `from django.db.models import Q`
+      * `Q(question__startswith='Who') | Q(question__startswith='What')`
+      * Also, Q objects can be negated using the ~ operator, allowing for combined lookups that combine both a normal query and a negated (NOT) query:
+      * `Q(question__startswith='Who') | ~Q(pub_date__year=2005)`
+    * Performance in queries
+      * Django reaches out to the database once we do something with the result of the query.
+      * If we query the database and use the result, tt also caches the result of queries and uses the cached results if we chain any further queries with the previous queries.
+      * 
 * Shell
   * `from mylib.models import Book`
   * Book.objects.all() => gets all the objects in the Book Table
