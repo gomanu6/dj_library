@@ -365,6 +365,7 @@ Starting Python 3.6 dictionaries are ordered.
     * SlugField : If max_length is not specified, Django will use a default length of 50.
       * It is often useful to automatically prepopulate a SlugField based on the value of some other value. You can do this automatically in the admin using [prepopulated_fields](https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#django.contrib.admin.ModelAdmin.prepopulated_fields).
       * `class SlugField(max_length=50, **options)`
+      * slug = models.SlugField()
     * TextField : A large text field. The default form widget for this field is a Textarea.
     * TimeField : A time, represented in Python by a datetime.time instance. Accepts the same auto-population options as DateField.
       * `class TimeField(auto_now=False, auto_now_add=False, **options)`
@@ -426,9 +427,16 @@ Starting Python 3.6 dictionaries are ordered.
       * `def get_absolute_url(self):
     from django.urls import reverse
     return reverse('people-detail', kwargs={'pk' : self.pk})`
+      * In the template where the url is to be used, 
+        * `href="{{ book.get_absolute_url  }}"`
+          * Django will call this and get back the url based on the method in the class (models.py))
     * save()
       * `Model.save(force_insert=False, force_update=False, using=DEFAULT_DB_ALIAS, update_fields=None)`
       * [What happens when you save?](https://docs.djangoproject.com/en/3.2/ref/models/instances/#what-happens-when-you-save)
+      * In case the save method is overwritten call `super().save()` after the custom statements
+      * `from django.utils.text import slugify`
+      * `def save(self, *args, **kwargs):`
+        * `self.slug = `
     * [delete](https://docs.djangoproject.com/en/3.2/ref/models/instances/#deleting-objects)
       * The delete method, conveniently, is named delete(). This method immediately deletes the object and returns the number of objects deleted and a dictionary with the number of deletions per object type. Example:
         * `Model.delete(using=DEFAULT_DB_ALIAS, keep_parents=False)`
@@ -439,6 +447,10 @@ Starting Python 3.6 dictionaries are ordered.
         * exclude()
         * annotate()
         * alias()
+        * order_by() : By default, results returned by a QuerySet are ordered by the ordering tuple given by the ordering option in the model’s Meta. You can override this on a per-QuerySet basis by using the order_by method.
+          * `Entry.objects.filter(pub_date__year=2005).order_by('-pub_date', 'headline')`
+          * You can also order by query expressions by calling asc() or desc() on the expression:
+          * `Entry.objects.order_by(Coalesce('summary', 'headline').desc())`
         * values()
         * dates()
         * reverse()
@@ -487,6 +499,7 @@ Starting Python 3.6 dictionaries are ordered.
   * null : If True, Django will store empty values as NULL in the database. Default is False.
   * blank : If True, the field is allowed to be blank. Default is False.
   * default : The default value for the field.
+  * db_index : If True, a database index will be created for this field.
   * editable : If False, the field will not be displayed in the admin or any other ModelForm. They are also skipped during model validation. Default is True.
   * primary_key : If you don’t specify primary_key=True for any field in your model, Django will automatically add a field to hold the primary key, so you don’t need to set primary_key=True on any of your fields unless you want to override the default primary-key behavior.
   * error_messages : The error_messages argument lets you override the default messages that the field will raise. Pass in a dictionary with keys matching the error messages you want to override.
@@ -511,6 +524,72 @@ Starting Python 3.6 dictionaries are ordered.
   * Book.objects.filter(is_bestselling=True)
   * Book.objects.filter(is_bestselling=True, rating=5)
   * Book.objects.filter(rating__lte=3)
+  * [get_object_or_404()](https://docs.djangoproject.com/en/3.2/topics/http/shortcuts/#get-object-or-404)
+    * Calls _get()_ on a given model manager, but it raises Http404 instead of the model’s DoesNotExist exception.
+    * get_object_or_404(Book, pk=id) # from django.shortcuts import get_object_or_404
+    * `get_object_or_404(klass, *args, **kwargs)`
+    * Required arguments
+      * klass : A Model class, a Manager, or a QuerySet instance from which to get the object.
+        * passing a Queryset
+        * `queryset = Book.objects.filter(title__startswith='M')
+get_object_or_404(queryset, pk=1)`
+      * **kwargs : Lookup parameters, which should be in the format accepted by get() and filter().
+  * [get_list_or_404()](https://docs.djangoproject.com/en/3.2/topics/http/shortcuts/#get-list-or-404)
+    * Returns the result of _filter()_ on a given model manager cast to a list, raising Http404 if the resulting list is empty.
+    * Required arguments
+      * klass : A Model class, a Manager, or a QuerySet instance from which to get the list.
+      * **kwargs : Lookup parameters, which should be in the format accepted by get() and filter().
+
+### SlugField
+- In models.py
+  - define a field for slug
+  - `slug = models.SlugField(default="", null=False)`
+  - `from django.utils.text import slugify`
+  - Overwrite the default save method in the Model class:
+    - `def save(self, 8args, **kwargs):`
+      - `self.slug = slugify(self.title)` 
+      - `super().save(8args, **kwargs)`
+
+## [Aggregation](https://docs.djangoproject.com/en/3.2/topics/db/aggregation/)
+- Django provides two ways to generate aggregates
+- aggregate()
+  - The first way is to generate summary values over an entire QuerySet
+  - sometimes you will need to retrieve values that are derived by summarizing or aggregating a collection of objects
+  - `from django.db.models import Avg
+  Book.objects.all().aggregate(Avg('price'))`
+  - `Book.objects.aggregate(Avg('price'))`
+  - aggregate() is a terminal clause for a QuerySet that, when invoked, returns a dictionary of name-value pairs
+  - `Book.objects.aggregate(average_price=Avg('price'))`
+- annonate()
+  - The second way to generate summary values is to generate an independent summary for each object in a QuerySet
+  - Annotates each object in the QuerySet with the provided list of query expressions. An expression may be a simple value, a reference to a field on the model (or any related models), or an aggregate expression (averages, sums, etc.) that has been computed over the objects that are related to the objects in the QuerySet.
+  - Per-object summaries can be generated using the annotate() clause
+  - When an annotate() clause is specified, each object in the QuerySet will be annotated with the specified values.
+  - `q = Book.objects.annotate(Count('authors'))`
+  - `q[0].authors__count`
+  - `q[1].authors__count`
+  - Each argument to annotate() is an annotation that will be added to each object in the QuerySet that is returned.
+### [Aggregation Methods](https://docs.djangoproject.com/en/3.2/ref/models/querysets/#aggregation-functions)
+- Avg : 
+- Count
+- Max
+- Min
+- Sum
+- StdDev
+- Variance
+- from django.db.models import Avg, Count, Max, Min ....
+- `Book.objects.all().aggregate(Avg('price'))`
+- Use order_by() to order the dataset received from the database.
+
+
+### Overwriting predefined model methods
+- It’s important to remember to call the superclass method – that’s that super().save(*args, **kwargs) business – to ensure that the object still gets saved into the database. If you forget to call the superclass method, the default behavior won’t happen and the database won’t get touched.
+- It’s also important that you pass through the arguments that can be passed to the model method – that’s what the *args, **kwargs bit does. Django will, from time to time, extend the capabilities of built-in model methods, adding new arguments. If you use *args, **kwargs in your method definitions, you are guaranteed that your code will automatically support those arguments when they are added.
+- Overridden model methods are not called on bulk operations.
+
+
+### Admin Area
+
 
 
 ### Deployment

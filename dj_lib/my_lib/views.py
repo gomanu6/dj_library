@@ -38,7 +38,7 @@ def subject(request, subject):
         })
     except:
         raise Http404()
-    return HttpResponse(book_description)
+    # return HttpResponse(book_description)
 
 
 def subject_no(request, subject):
