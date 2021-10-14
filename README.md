@@ -390,6 +390,24 @@ Starting Python 3.6 dictionaries are ordered.
     * limit_choices_to
   * ManyToManyField : A many-to-many relationship. Requires a positional argument: the class to which the model is related, which works exactly the same as it does for ForeignKey, including recursive and lazy relationships.
     * `class ManyToManyField(to, **options)`
+    * ManytoMany relationshios between tables creates a mapping table that maps the relationships
+    * add method
+      * `germany = Country(name="Germany", code="DE")`
+      * `mys = Book.objects.all()[0]`
+      * `mys.published_countries.add(germany)`
+      * `mys.published_countries.get(...)`
+      * name of relation between Country and Book
+        * `class Book(models.Model):`
+        * .....
+        * `published_countries = models.ManyToManyField(Country)`
+        * From Country perspective
+          * `ger = Country.objects.all()[0]`
+          * `ger.book_set.all()`
+          * book_set = objects
+          * book_set = class name (Book) in lowercase + _set
+        * From Book perspective
+          * bk = Book.objects.get(title=(...))
+          * bk.published_countries # returns the list of countries
     * Some Arguments (optional)
       * related_name
       * related_query_name
@@ -409,6 +427,7 @@ Starting Python 3.6 dictionaries are ordered.
     * default_related_name : The name that will be used by default for the relation from a related object back to this one. The default is <model_name>_set.
     * ordering : The default ordering for the object, for use when obtaining lists of objects:
     * permissions : Extra permissions to enter into the permissions table when creating this object. Add, change, delete, and view permissions are automatically created for each model. This example specifies an extra permission, can_deliver_pizzas:
+    * verbose_name_plural : The plural name for the object, `verbose_name_plural = "stories"`
   * Read Only Meta Attributes
     * label : Representation of the object, returns app_label.object_name, e.g. 'polls.Question'.
     * label_lower : Representation of the model, returns app_label.model_name, e.g. 'polls.question'.
@@ -524,6 +543,20 @@ Starting Python 3.6 dictionaries are ordered.
   * Book.objects.filter(is_bestselling=True)
   * Book.objects.filter(is_bestselling=True, rating=5)
   * Book.objects.filter(rating__lte=3)
+  * Querying Related Models
+    * Main Table that contains a foreign Key
+      * books_by_rowling = Book.objects.filter(author__last_name="Rowling")
+      * books_by_rowling = Book.objects.filter(author__last_name__contains="ling")
+      * author = field in Book Model
+      * last_name = field in Author Model
+      * contains = modifier
+    * Foreign Key Table with data from Main table
+      * jkr = Author.objects.get(first_name="J.K.")
+      * jkr.book_set.all() # returns all books (Book Table) written by author (author Table) starting with first name J.K.
+      * book_set = objects
+      * book_set = class name (Book) in lowercase + _set
+      * set related_name="books" in the Foreign Key entry in the Book Model to change the reference in the Author model
+      * jkr.books.all() = returns all books
   * [get_object_or_404()](https://docs.djangoproject.com/en/3.2/topics/http/shortcuts/#get-object-or-404)
     * Calls _get()_ on a given model manager, but it raises Http404 instead of the model’s DoesNotExist exception.
     * get_object_or_404(Book, pk=id) # from django.shortcuts import get_object_or_404
@@ -588,7 +621,41 @@ get_object_or_404(queryset, pk=1)`
 - Overridden model methods are not called on bulk operations.
 
 
-### Admin Area
+### [Some of the Commands provided by applications](https://docs.djangoproject.com/en/3.2/ref/django-admin/#commands-provided-by-applications)
+- [createsuperuser](https://docs.djangoproject.com/en/3.2/ref/django-admin/#createsuperuser)
+  - `python manage.py createsuperuser`
+  - Register models in admin.py
+  - This command is only available if Django’s authentication system (django.contrib.auth) is installed.
+  - This is useful if you need to create an initial superuser account or if you need to programmatically generate superuser accounts for your site(s).
+- [changepassword](https://docs.djangoproject.com/en/3.2/ref/django-admin/#changepassword)
+  - This command is only available if Django’s authentication system (django.contrib.auth) is installed.
+  - If you do not supply a user, the command will attempt to change the password whose username matches the current user.
+- clearsessions
+  - `django-admin clearsessions`
+  - `django.contrib.sessions`
+  - Can be run as a cron job or directly to clean out expired sessions.
+- [collectstatic](https://docs.djangoproject.com/en/3.2/ref/django-admin/#collectstatic)
+  - This command is only available if the static files application (django.contrib.staticfiles) is installed.
+  - [description](https://docs.djangoproject.com/en/3.2/ref/contrib/staticfiles/#collectstatic)
+  - Collects the static files into STATIC_ROOT.
+- [findstatic](https://docs.djangoproject.com/en/3.2/ref/contrib/staticfiles/#findstatic)
+  - django-admin findstatic staticfile \[staticfile ...]
+  - Searches for one or more relative paths with the enabled finders.
+  - This is a debugging aid; it’ll show you exactly which static file will be collected for a given path.
+  - 
+
+### [Admin Area](https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#module-django.contrib.admin)
+- Register models in admin.py
+  - `from django.contrib import admin`
+  - `from .models import Book`
+  - admin.site.register(Book)
+- To edit functionality in the admin.py
+  - Add a class to modify the functionality
+  - `class BookAdmin(admin.ModelAdmin)`
+    - `readonly_fields = ("slug")` 
+    - `prepopulated_fields = {"slug": ("title",)}` # does not work with readonly_fields
+  - `list_filter = ("author", "rating")` # add filter functionality
+  - list_display = ("title", "author") # change the fields displayed in teh admin table
 
 
 
