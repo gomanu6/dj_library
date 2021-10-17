@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.urls import reverse
 
+
+
 subjects = {
     'science': 'Science Books',
     'maths': 'Maths Books',

@@ -1,0 +1,325 @@
+
+Ancestors (MRO) : Method Resolution Order
+
+### [Class Based Views](https://docs.djangoproject.com/en/3.2/topics/class-based-views/)
+- Base Views
+  - **View**
+    - class django.views.generic.base.View
+    - can also be imported from django.views.
+    - All other class-based views inherit from this base class
+    - Attributes
+      - http_method_names : The list of HTTP method names that this view will accept.
+      - Default: `['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']`
+    - Methods
+      - classmethod as_view(**initkwargs)
+        - Returns a callable view that takes a request and returns a response:
+        - `response = MyView.as_view()(request)`
+      - setup(), dispatch(), http_method_not_allowed(), options()
+    - Method Flowchart
+      - setup(request, *args, **kwargs)
+        - Performs key view initialization prior to dispatch().
+        - assigns the HttpRequest to the view’s request attribute, and any positional and/or keyword arguments captured from the URL pattern to the args and kwargs attributes,
+        - If overriding this method, you must call super()
+      - dispatch(request, *args, **kwargs)
+        - accepts a request argument plus arguments, and returns a HTTP response
+        - will inspect the HTTP method and attempt to delegate to a method that matches the HTTP method; a GET will be delegated to get(), a POST to post(), and so on
+      - http_method_not_allowed(request, *args, **kwargs)
+        - If the view was called with a HTTP method it doesn’t support, this method is called instead.
+      - options(request, *args, **kwargs)
+        - Handles responding to requests for the OPTIONS HTTP verb. Returns a response with the Allow header containing a list of the view’s allowed HTTP method names.
+  - **TemplateView**
+    - class django.views.generic.base.TemplateView
+    - Renders a given template, with the context containing parameters captured in the URL.
+    - Ancestors (MRO) : inherits methods and attributes from these Ancestors.
+      - [django.views.generic.base.TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+        - Attributes
+          - template_name : The full name of a template to use as defined by a string. Not defining a template_name will raise a django.core.exceptions.ImproperlyConfigured exception.
+          - template_engine : Default is None, which tells Django to search for the template in all configured engines
+          - response_class : The response class to be returned by render_to_response method. Default is TemplateResponse.
+          - content_type : The content type to use for the response. content_type is passed as a keyword argument to response_class. Default is None – meaning that Django uses 'text/html'.
+        - Methods
+          - render_to_response(context, **response_kwargs)
+            - Returns a self.response_class instance.
+            - If any keyword arguments are provided, they will be passed to the constructor of the response class.
+            - Calls get_template_names() to obtain the list of template names that will be searched looking for an existent template.
+          - get_template_names()
+            - Returns a list of template names to search for when rendering the template. The first template that is found will be used.
+            - The default implementation will return a list containing template_name (if it is specified).
+      - [django.views.generic.base.ContextMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.ContextMixin)
+        - Attributes
+          - extra_context : A dictionary to include in the context. This is a convenient way of specifying some context in as_view().
+          - `from django.views.generic import TemplateView
+TemplateView.as_view(extra_context={'title': 'Custom Title'})`
+        - Methods
+          - get_context_data(**kwargs)
+            - Returns a dictionary representing the template context. The keyword arguments provided will make up the returned context
+            - `def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context['number'] = random.randrange(1, 100)
+    return context`
+      - [django.views.generic.base.View](https://docs.djangoproject.com/en/3.2/ref/class-based-views/base/#django.views.generic.base.View)
+        - Attributes
+          - http_method_names
+        - Method Flowchart
+          - setup()
+          - dispatch()
+          - http_method_not_allowed()
+
+  - **RedirectView**
+    - class django.views.generic.base.RedirectView
+    - Redirects to a given URL.
+    - Ancestors (MRO)
+      - View
+    - Method Flowchart
+      - setup()
+      - dispatch()
+      - http_method_not_allowed()
+      - get_redirect_url()
+        - get_redirect_url(*args, **kwargs)
+        - Constructs the target URL for redirection.
+        - The args and kwargs arguments are positional and/or keyword arguments captured from the URL pattern, respectively.
+        - The default implementation uses url as a starting string and performs expansion of % named parameters in that string using the named groups captured in the URL.
+        - If url is not set, get_redirect_url() tries to reverse the pattern_name using what was captured in the URL (both named and unnamed groups are used).
+        - If requested by query_string, it will also append the query string to the generated URL. Subclasses may implement any behavior they wish, as long as the method returns a redirect-ready URL string.
+    - Attributes 
+      - URL
+        - The URL to redirect to, as a string. Or None to raise a 410 (Gone) HTTP error.
+      - pattern_name
+        - The name of the URL pattern to redirect to. Reversing will be done using the same args and kwargs as are passed in for this view.
+      - permanent
+        - Whether the redirect should be permanent. The only difference here is the HTTP status code returned. If True, then the redirect will use status code 301.
+        - By default, permanent is False.
+      - query_string
+        - Whether to pass along the GET query string to the new location. If True, then the query string is appended to the URL. If False, then the query string is discarded. By default, query_string is False.
+
+- [Generic Display Views](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-display/)
+  - **DetailView**
+    - class django.views.generic.detail.DetailView
+    - While this view is executing, self.object will contain the object that the view is operating upon.
+    - Ancestors (MRO)
+      - [django.views.generic.detail.SingleObjectTemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-single-object/#django.views.generic.detail.SingleObjectTemplateResponseMixin)
+        - Extends [TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+        - Methods and Attributes
+          - template_name_field
+            - The field on the current object instance that can be used to determine the name of a candidate template. If either template_name_field itself or the value of the template_name_field on the current object instance is None, the object will not be used for a candidate template name.
+          - template_name_suffix
+            - The suffix to append to the auto-generated candidate template name. Default suffix is _detail
+          - get_template_names()
+            - Returns a list of candidate template names. Returns the following list:
+              - the value of template_name on the view (if provided)
+              - the contents of the template_name_field field on the object instance that the view is operating upon (if available)
+              - `<app_label>/<model_name><template_name_suffix>.html`
+      - [django.views.generic.base.TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+      - [django.views.generic.detail.BaseDetailView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-display/#django.views.generic.detail.BaseDetailView)
+        - A base view for displaying a single object. It is not intended to be used directly, but rather as a parent class of the django.views.generic.detail.DetailView or other views representing details of a single object.
+          - Ancestors (MRO)
+            - SingleObjectMixin
+            - View
+      - [django.views.generic.detail.SingleObjectMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-single-object/#django.views.generic.detail.SingleObjectMixin)
+        - Provides a mechanism for looking up an object associated with the current HTTP request
+        - Methods and Attributes
+          - model : The model that this view will display data for.
+            - Specifying model = Foo is effectively the same as specifying queryset = Foo.objects.all(), where objects stands for Foo’s default manager.
+          - queryset : A QuerySet that represents the objects. If provided, the value of queryset supersedes the value provided for model.
+            - queryset is a class attribute with a mutable value so care must be taken when using it directly. Before using it, either call its all() method or retrieve it with get_queryset() which takes care of the cloning behind the scenes.
+          - slug_field : The name of the field on the model that contains the slug. By default, slug_field is 'slug'.
+          - slug_url_kwarg : The name of the URLConf keyword argument that contains the slug. By default, slug_url_kwarg is 'slug'.
+          - pk_url_kwarg : The name of the URLConf keyword argument that contains the primary key. By default, pk_url_kwarg is 'pk'.
+          - context_object_name : Designates the name of the variable to use in the context.
+          - query_pk_and_slug : If True, causes get_object() to perform its lookup using both the primary key and the slug. Defaults to False.
+          - get_object(queryset=None)
+            - Returns the single object that this view will display.
+            - If queryset is provided, that queryset will be used as the source of objects; otherwise, get_queryset() will be used.
+            - get_object() looks for a pk_url_kwarg argument in the arguments to the view; if this argument is found, this method performs a primary-key based lookup using that value.
+            - If this argument is not found, it looks for a slug_url_kwarg argument, and performs a slug lookup using the slug_field.
+            - _When query_pk_and_slug is True_, get_object() will perform its lookup using both the primary key and the slug.
+          - get_queryset()
+            - Returns the queryset that will be used to retrieve the object that this view will display.
+            - By default, get_queryset() returns the value of the queryset attribute if it is set, otherwise it constructs a QuerySet by calling the all() method on the model attribute’s default manager.
+          - get_context_object_name(obj)
+            - Return the context variable name that will be used to contain the data that this view is manipulating. If context_object_name is not set, the context name will be constructed from the model_name of the model that the queryset is composed from. For example, the model Article would have context object named 'article'.
+          - get_context_data(**kwargs)
+            - Returns context data for displaying the object.
+            - The base implementation of this method requires that the self.object attribute be set by the view (even if None). Be sure to do this if you are using this mixin without one of the built-in views that does so.
+            - It returns a dictionary with these contents:
+              - object: The object that this view is displaying (self.object).
+              - context_object_name: self.object will also be stored under the name returned by get_context_object_name(), which defaults to the lowercased version of the model name.
+          - get_slug_field()
+            - Returns the name of a slug field to be used to look up by slug. By default this returns the value of slug_field.
+      - [django.views.generic.base.View](https://docs.djangoproject.com/en/3.2/ref/class-based-views/base/#django.views.generic.base.View)
+        - Same as above
+    - Method Flowchart
+      - setup()
+      - dispatch()
+      - http_method_not_allowed()
+      - get_template_names()
+      - get_slug_field()
+      - get_queryset()
+      - get_object()
+      - get_context_object_name()
+      - get_context_data()
+      - get()
+      - render_to_response()
+  - **List View**
+    - class django.views.generic.list.ListView
+    - A page representing a list of objects.
+    - While this view is executing, _self.object_list_ will contain the list of objects (usually, but not necessarily a queryset) that the view is operating upon.
+    - Ancestors (MRO)
+      - [django.views.generic.list.MultipleObjectTemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-multiple-object/#django.views.generic.list.MultipleObjectTemplateResponseMixin)
+        - class django.views.generic.list.MultipleObjectTemplateResponseMixin
+        - A mixin class that performs template-based response rendering for views that operate upon a list of object instances. Requires that the view it is mixed with provides self.object_list, the list of object instances that the view is operating on. self.object_list may be, but is not required to be, a QuerySet.
+        - Extends TemplateResponseMixin
+        - Methods and Attributes
+          - template_name_suffix
+            - The suffix to append to the auto-generated candidate template name. Default suffix is _list.
+          - get_template_names()
+            - Returns a list of candidate template names. Returns the following list:
+              - the value of template_name on the view (if provided)
+              - `<app_label>/<model_name><template_name_suffix>.html`
+      - [django.views.generic.base.TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+      - [django.views.generic.list.BaseListView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-display/#django.views.generic.list.BaseListView)
+      - [django.views.generic.list.MultipleObjectMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-multiple-object/#django.views.generic.list.MultipleObjectMixin)
+        - class django.views.generic.list.MultipleObjectMixin
+        - _Extends ContextMixin_
+        - A mixin that can be used to display a list of objects.
+        - If paginate_by is specified, Django will paginate the results returned by this. You can specify the page number in the URL in one of two ways:
+          - Use the page parameter in the URLconf. For example, this is what your URLconf might look like:
+            - `path('objects/page<int:page>/', PaginatedView.as_view()),`
+          - Pass the page number via the page query-string parameter. For example, a URL would look like this:
+            - `/objects/?page=3`
+        - These values and lists are 1-based, not 0-based, so the first page would be represented as page 1.
+        - Note that page must be either a valid page number or the value last; any other value for page will result in a 404 error.
+        - Methods and Attributes
+          - allow_empty : A boolean specifying whether to display the page if no objects are available. If this is False and no objects are available, the view will raise a 404 instead of displaying an empty page. By default, this is True.
+          - model : The model that this view will display data for. Specifying model = Foo is effectively the same as specifying queryset = Foo.objects.all(), where objects stands for Foo’s default manager.
+          - queryset : A QuerySet that represents the objects. If provided, the value of queryset supersedes the value provided for model.
+          - ordering : A string or list of strings specifying the ordering to apply to the queryset. Valid values are the same as those for order_by()
+          - paginate_by : An integer specifying how many objects should be displayed per page. If this is given, the view will paginate objects with paginate_by objects per page. The view will expect either a page query string parameter (via request.GET) or a page variable specified in the URLconf.
+          - paginate_orphans : An integer specifying the number of “overflow” objects the last page can contain. This extends the paginate_by limit on the last page by up to paginate_orphans, in order to keep the last page from having a very small number of objects.
+          - page_kwarg : A string specifying the name to use for the page parameter. The view will expect this parameter to be available either as a query string parameter (via request.GET) or as a kwarg variable specified in the URLconf. Defaults to page.
+          - paginator_class : The paginator class to be used for pagination. By default, django.core.paginator.Paginator is used. If the custom paginator class doesn’t have the same constructor interface as django.core.paginator.Paginator, you will also need to provide an implementation for get_paginator().
+          - context_object_name : Designates the name of the variable to use in the context.
+          - get_queryset() : Get the list of items for this view. This must be an iterable and may be a queryset (in which queryset-specific behavior will be enabled).
+          - get_ordering() : Returns a string (or iterable of strings) that defines the ordering that will be applied to the queryset. Returns ordering by default.
+          - paginate_queryset(queryset, page_size) : Returns a 4-tuple containing (paginator, page, object_list, is_paginated). Constructed by paginating queryset into pages of size page_size. If the request contains a page argument, either as a captured URL argument or as a GET argument, object_list will correspond to the objects from that page.
+          - get_paginate_by(queryset) : Returns the number of items to paginate by, or None for no pagination. By default this returns the value of paginate_by.
+          - get_paginator(queryset, per_page, orphans=0, allow_empty_first_page=True) : Returns an instance of the paginator to use for this view. By default, instantiates an instance of paginator_class.
+          - get_paginate_orphans() : An integer specifying the number of “overflow” objects the last page can contain. By default this returns the value of paginate_orphans.
+          - get_allow_empty() : Return a boolean specifying whether to display the page if no objects are available. If this method returns False and no objects are available, the view will raise a 404 instead of displaying an empty page. By default, this is True.
+          - get_context_object_name(object_list) : Return the context variable name that will be used to contain the list of data that this view is manipulating. If object_list is a queryset of Django objects and context_object_name is not set, the context name will be the model_name of the model that the queryset is composed from, with postfix '_list' appended. For example, the model Article would have a context object named article_list.
+          - get_context_data(**kwargs) : Returns context data for displaying the list of objects.
+          - Context
+            - object_list: The list of objects that this view is displaying. If context_object_name is specified, that variable will also be set in the context, with the same value as object_list.
+            - is_paginated: A boolean representing whether the results are paginated. Specifically, this is set to False if no page size has been specified, or if the available objects do not span multiple pages.
+            - paginator: An instance of [django.core.paginator.Paginator](https://docs.djangoproject.com/en/3.2/ref/paginator/#django.core.paginator.Paginator). If the page is not paginated, this context variable will be None.
+            - page_obj: An instance of [django.core.paginator.Page](https://docs.djangoproject.com/en/3.2/ref/paginator/#django.core.paginator.Page). If the page is not paginated, this context variable will be None.
+      - [django.views.generic.base.View](https://docs.djangoproject.com/en/3.2/ref/class-based-views/base/#django.views.generic.base.View)
+      - Method Flowchart
+        - setup()
+        - dispatch()
+        - http_method_not_allowed()
+        - get_template_names()
+        - get_queryset()
+        - get_context_object_name()
+        - get_context_data()
+        - get()
+        - render_to_response()
+
+- [Generic Editing Views](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-editing/)
+  - **FormView**
+  - class django.views.generic.edit.FormView
+  - A view that displays a form. On error, redisplays the form with validation errors; on success, redirects to a new URL.
+  - Ancestors (MRO)
+    - [django.views.generic.base.TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+    - [django.views.generic.edit.BaseFormView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-editing/#django.views.generic.edit.BaseFormView)
+      - class django.views.generic.edit.BaseFormView
+      - A base view for displaying a form. It is not intended to be used directly, but rather as a parent class of the django.views.generic.edit.FormView or other views displaying a form.
+      - Ancestors (MRO)
+        - [django.views.generic.edit.FormMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.FormMixin)
+        - [django.views.generic.edit.ProcessFormView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.ProcessFormView)
+    - [django.views.generic.edit.FormMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.FormMixin)
+      - class django.views.generic.edit.FormMixin
+      - A mixin class that provides facilities for creating and displaying forms.
+      - Mixins
+        - django.views.generic.base.ContextMixin
+      - Methods and Attributes
+        - initial : A dictionary containing initial data for the form.
+        - form_class : The form class to instantiate.
+        - success_url : The URL to redirect to when the form is successfully processed.
+        - prefix : The prefix for the generated form.
+        - get_initial() : Retrieve initial data for the form. By default, returns a copy of initial.
+        - get_form_class() : Retrieve the form class to instantiate. By default form_class.
+        - get_form(form_class=None) : Instantiate an instance of form_class using get_form_kwargs(). If form_class isn’t provided get_form_class() will be used.
+        - get_form_kwargs() : Build the keyword arguments required to instantiate the form. 
+          - The initial argument is set to get_initial(). If the request is a POST or PUT, the request data (request.POST and request.FILES) will also be provided.
+        - get_prefix() : Determine the prefix for the generated form. Returns prefix by default.
+        - get_success_url() : Determine the URL to redirect to when the form is successfully validated. Returns success_url by default.
+        - form_valid(form) : Redirects to get_success_url().
+        - form_invalid(form) : Renders a response, providing the invalid form as context.
+        - get_context_data(**kwargs) : Calls get_form() and adds the result to the context data with the name ‘form’.
+
+    - [django.views.generic.edit.ProcessFormView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.ProcessFormView)
+      - class django.views.generic.edit.ProcessFormView
+      - _Extends django.views.generic.base.View_
+      - A mixin that provides basic HTTP GET and POST workflow.
+      - This is named ‘ProcessFormView’ and inherits directly from django.views.generic.base.View, but breaks if used independently, so it is more of a mixin.
+      - Methods and Attributes
+        - get(request, *args, **kwargs)
+          - Renders a response using a context created with get_context_data().
+        - post(request, *args, **kwargs)
+          - Constructs a form, checks the form for validity, and handles it accordingly.
+        - put(*args, **kwargs)
+          - The PUT action is also handled and passes all parameters through to post().
+    - [django.views.generic.base.View](https://docs.djangoproject.com/en/3.2/ref/class-based-views/base/#django.views.generic.base.View)
+  - **CreateView**
+  - class django.views.generic.edit.CreateView
+  - A view that displays a form for creating an object, redisplaying the form with validation errors (if there are any) and saving the object.
+  - Ancestors (MRO)
+    - [django.views.generic.detail.SingleObjectTemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-single-object/#django.views.generic.detail.SingleObjectTemplateResponseMixin)
+    - [django.views.generic.base.TemplateResponseMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-simple/#django.views.generic.base.TemplateResponseMixin)
+    - [django.views.generic.edit.BaseCreateView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/generic-editing/#django.views.generic.edit.BaseCreateView)
+      - class django.views.generic.edit.BaseCreateView
+      - A base view for creating a new object instance. It is not intended to be used directly, but rather as a parent class of the django.views.generic.edit.CreateView.
+      - Ancestors (MRO)
+        - django.views.generic.edit.ModelFormMixin
+        - django.views.generic.edit.ProcessFormView
+        - Methods
+          - get(request, *args, **kwargs)
+            - Sets the current object instance (self.object) to None.
+          - post(request, *args, **kwargs)
+            - Sets the current object instance (self.object) to None.
+    - [django.views.generic.edit.ModelFormMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.ModelFormMixin)
+      - class django.views.generic.edit.ModelFormMixin
+      - A form mixin that works on ModelForms, rather than a standalone form.
+      - Since this is a subclass of SingleObjectMixin, instances of this mixin have access to the model and queryset attributes, describing the type of object that the ModelForm is manipulating.
+      - If you specify both the fields and form_class attributes, an ImproperlyConfigured exception will be raised.
+      - Mixins
+        - django.views.generic.edit.FormMixin
+        - django.views.generic.detail.SingleObjectMixin
+      - Methods and Attributes
+      - model : A model class. Can be explicitly provided, otherwise will be determined by examining self.object or queryset.
+      - fields : A list of names of fields. This is interpreted the same way as the Meta.fields attribute of ModelForm.
+        - This is a required attribute if you are generating the form class automatically (e.g. using model). Omitting this attribute will result in an ImproperlyConfigured exception.
+      - success_url : The URL to redirect to when the form is successfully processed.
+        - success_url may contain dictionary string formatting, which will be interpolated against the object’s field attributes. For example, you could use success_url="/polls/{slug}/" to redirect to a URL composed out of the slug field on a model.
+      - get_form_class() : Retrieve the form class to instantiate. If form_class is provided, that class will be used. Otherwise, a ModelForm will be instantiated using the model associated with the queryset, or with the model, depending on which attribute is provided.
+      - get_form_kwargs() : Add the current instance (self.object) to the standard get_form_kwargs().
+      - get_success_url() : Determine the URL to redirect to when the form is successfully validated. Returns django.views.generic.edit.ModelFormMixin.success_url if it is provided; otherwise, attempts to use the get_absolute_url() of the object.
+      - form_valid(form) : Saves the form instance, sets the current object for the view, and redirects to get_success_url().
+      - form_invalid(form) : Renders a response, providing the invalid form as context.
+    - [django.views.generic.edit.FormMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.FormMixin)
+    - [django.views.generic.detail.SingleObjectMixin](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-single-object/#django.views.generic.detail.SingleObjectMixin)
+    - [django.views.generic.edit.ProcessFormView](https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-editing/#django.views.generic.edit.ProcessFormView)
+    - [django.views.generic.base.View](https://docs.djangoproject.com/en/3.2/ref/class-based-views/base/#django.views.generic.base.View)
+  - Attributes
+    - template_name_suffix
+      - The CreateView page displayed to a GET request uses a template_name_suffix of '_form'. For example, changing this attribute to '_create_form' for a view creating objects for the example Author model would cause the default template_name to be 'myapp/author_create_form.html'.
+    - object
+      - When using CreateView you have access to self.object, which is the object being created. If the object hasn’t been created yet, the value will be None.
+  - Methods
+    - get(request, *args, **kwargs)
+      - Sets the current object instance (self.object) to None.
+    - post(request, *args, **kwargs)
+      - Sets the current object instance (self.object) to None.
+  - **UpdateView**
+  - **DeleteView**
