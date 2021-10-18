@@ -648,12 +648,12 @@ get_object_or_404(queryset, pk=1)`
 - Register models in admin.py
   - `from django.contrib import admin`
   - `from .models import Book`
-  - admin.site.register(Book)
+  - `admin.site.register(Book)`
 - To edit functionality in the admin.py
   - Add a class to modify the functionality
   - `class BookAdmin(admin.ModelAdmin)`
     - `readonly_fields = ("slug")` 
-    - `prepopulated_fields = {"slug": ("title",)}` # does not work with readonly_fields
+    - `prepopulated_fields = {"slug": ("title",)}` # does not work with readonly_fields attribute
   - `list_filter = ("author", "rating")` # add filter functionality
   - list_display = ("title", "author") # change the fields displayed in teh admin table
 
