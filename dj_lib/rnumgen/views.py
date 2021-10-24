@@ -1,18 +1,22 @@
 from django.shortcuts import render
 
+from .models import Employee, Report
 
-rnums = {
-    'A123': 'Yes',
-    'A124': 'No',
-    'A125': 'Maybe'
-}
 
 # Create your views here.
 
 
-def rnum_index(request):
-    rnumkeys = list(rnums.keys())
+def all_reports(request):
+    reports = Report.objects.all()
     context = {
-        'nums': rnumkeys
+        'reports': reports
     }
-    return render(request, 'rnumgen/rnums.html', context)
+    return render(request, 'rnumgen/all_reports.html', context)
+
+
+def report(request, report_no):
+    identified_report = Report.objects.get(rnumber=report_no)
+    context = {
+        'report': identified_report
+    }
+    return render(request, 'rnumgen/report.html', context)

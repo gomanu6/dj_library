@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block page_title %}
+    Report No: {{ report.rnumber }}
+{% endblock %}
+
+{% block content %}
+
+<p> Report No. {{ report.rnumber }}</p>
+<p>Client Name: {{report.name }}</p>
+<p> Type: {{ report.rtype }}</p>
+<p> Made By: {{report.roperator }}</p>
+
+{% endblock %}
+
+
+
+
+

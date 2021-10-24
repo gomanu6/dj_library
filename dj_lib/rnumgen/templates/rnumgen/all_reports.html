@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{% block page_title %}
+All Reports
+{% endblock %}
+
+
+{% block content %}
+
+<p> List of all the Numbers</p>
+
+<ul>
+    {% for report in reports %}
+        <li><a href="{% url 'single_report' report %} ">{{report.rnumber}}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
