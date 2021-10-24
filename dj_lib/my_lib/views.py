@@ -8,7 +8,7 @@ subjects = {
     'science': 'Science Books',
     'maths': 'Maths Books',
     'English': 'English Books',
-    'history': 'histoory Books'
+    'history': 'history Books'
 }
 
 

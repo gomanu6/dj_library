@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block page_title %}
+All Reports
+{% endblock %}
+
+
+{% block content %}
+
+<p> List of all the Numbers</p>
+
+<ul>
+    {% for num in nums %}
+        <li>{{num}}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
